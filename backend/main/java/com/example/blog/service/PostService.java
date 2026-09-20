@@ -30,7 +30,6 @@ public class PostService {
     public PostResponse create(PostRequest request, Authentication authentication) {
         Author author = currentAuthor(authentication);
         Category category = category(request.categoryId());
-        ensureAssigned(author, category);
         Post post = new Post(); post.setTitle(request.title().trim()); post.setContent(request.content()); post.setAuthor(author); post.setCategory(category); post.setStatus(PostStatus.DRAFT);
         return mapper.post(posts.save(post));
     }
@@ -39,7 +38,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponse ownOne(Long id, Authentication auth) { return mapper.post(ownDraftOrAny(id, currentAuthor(auth))); }
     @Transactional
-    public PostResponse update(Long id, PostRequest request, Authentication auth) { Author author = currentAuthor(auth); Post post = ownDraftOrAny(id, author); ensureAssigned(author, category(request.categoryId())); post.setTitle(request.title().trim()); post.setContent(request.content()); post.setCategory(category(request.categoryId())); return mapper.post(posts.save(post)); }
+    public PostResponse update(Long id, PostRequest request, Authentication auth) { Author author = currentAuthor(auth); Post post = ownDraftOrAny(id, author); post.setTitle(request.title().trim()); post.setContent(request.content()); post.setCategory(category(request.categoryId())); return mapper.post(posts.save(post)); }
     @Transactional
     public void delete(Long id, Authentication auth) { posts.delete(ownDraftOrAny(id, currentAuthor(auth))); }
 
@@ -59,6 +58,5 @@ public class PostService {
     private Author currentAuthor(Authentication auth) { if (!(auth.getPrincipal() instanceof Author author) || author.getRole() != Role.AUTHOR) throw ApiException.forbidden("Author role required"); return author; }
     private void requireEditor(Authentication auth) { if (!(auth.getPrincipal() instanceof Author author) || author.getRole() != Role.EDITOR) throw ApiException.forbidden("Editor role required"); }
     private Category category(Long id) { return categories.findById(id).orElseThrow(() -> ApiException.notFound("Category not found")); }
-    private void ensureAssigned(Author author, Category category) { if (category.getAuthor() == null || !category.getAuthor().getId().equals(author.getId())) throw ApiException.forbidden("You may only use your assigned category"); }
     private Post ownDraftOrAny(Long id, Author author) { Post post = posts.findById(id).orElseThrow(() -> ApiException.notFound("Post not found")); if (!post.getAuthor().getId().equals(author.getId())) throw ApiException.forbidden("You may only access your own posts"); if (post.getStatus() != PostStatus.DRAFT) throw ApiException.forbidden("Only draft posts may be changed or accessed here"); return post; }
 }

@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { font-family: 'DM Sans', sans-serif; color: #1d2926; background: #f5f1e8; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input, select, textarea { font: inherit; }
+::selection { background: #e4a68e; color: #1d2926; }
+
+@layer components {
+  .button-primary { @apply inline-flex items-center justify-center rounded-sm bg-ink px-5 py-3 text-sm font-bold text-paper transition hover:bg-rust disabled:cursor-not-allowed disabled:opacity-50; }
+  .button-secondary { @apply inline-flex items-center justify-center rounded-sm border border-ink/20 px-5 py-3 text-sm font-bold text-ink transition hover:border-rust hover:text-rust disabled:cursor-not-allowed disabled:opacity-50; }
+  .field { @apply mt-2 w-full rounded-sm border border-line bg-white/50 px-3 py-3 text-sm outline-none transition placeholder:text-ink/40 focus:border-rust focus:ring-2 focus:ring-rust/10; }
+  .label { @apply text-xs font-bold uppercase tracking-[0.16em] text-ink/60; }
+}

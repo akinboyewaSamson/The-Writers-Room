@@ -1,0 +1,11 @@
+.mvn/
+target/
+*.iml
+.idea/
+
+node_modules/
+dist/
+target/
+.idea/
+.vscode/
+.env

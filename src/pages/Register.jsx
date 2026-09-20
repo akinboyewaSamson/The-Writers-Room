@@ -1,0 +1,10 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { getApiError } from '../api/client';
+import { registerAuthor } from '../api/services';
+
+export default function Register() {
+  const navigate = useNavigate(); const [form, setForm] = useState({ name: '', email: '', password: '' }); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
+  const submit = async (event) => { event.preventDefault(); setLoading(true); setError(''); try { await registerAuthor(form); navigate('/login', { state: { registered: true } }); } catch (err) { setError(getApiError(err)); } finally { setLoading(false); } };
+  return <div className="mx-auto max-w-md py-10"><p className="text-xs font-bold uppercase tracking-[0.2em] text-rust">Join the desk</p><h1 className="mt-3 font-display text-5xl font-bold">Become an author</h1>{error && <p className="mt-6 border-l-4 border-rust bg-rust/10 px-4 py-3 text-sm">{error}</p>}<form className="mt-8 space-y-5" onSubmit={submit}><div><label className="label" htmlFor="name">Name</label><input className="field" id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div><div><label className="label" htmlFor="email">Email</label><input className="field" id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></div><div><label className="label" htmlFor="password">Password</label><input className="field" id="password" type="password" minLength="8" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /><p className="mt-2 text-xs text-ink/50">At least 8 characters.</p></div><button className="button-primary w-full" disabled={loading}>{loading ? 'Creating account...' : 'Create author account'}</button></form><p className="mt-8 text-sm text-ink/60">Already registered? <Link className="font-bold text-rust" to="/login">Sign in</Link>.</p></div>;
+}

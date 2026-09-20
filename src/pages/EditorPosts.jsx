@@ -1,0 +1,14 @@
+import React, { useEffect, useState } from 'react';
+import { getApiError } from '../api/client';
+import { listCategories, listEditorPosts, publishPost } from '../api/services';
+import PostCard from '../components/PostCard';
+import Pagination from '../components/Pagination';
+
+export default function EditorPosts() {
+  const [status, setStatus] = useState(''); const [categoryId, setCategoryId] = useState(''); const [categories, setCategories] = useState([]); const [page, setPage] = useState(0); const [data, setData] = useState({ content: [], totalPages: 0 }); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
+  useEffect(() => { listCategories().then((res) => setCategories(res.data)).catch((err) => setError(getApiError(err))); }, []);
+  const load = () => { setLoading(true); listEditorPosts({ page, size: 6, ...(status ? { status } : {}), ...(categoryId ? { categoryId } : {}) }).then((res) => setData(res.data)).catch((err) => setError(getApiError(err))).finally(() => setLoading(false)); };
+  useEffect(load, [page, status, categoryId]);
+  const publish = async (id) => { try { await publishPost(id); load(); } catch (err) { setError(getApiError(err)); } };
+  return <><div className="mb-10 border-b border-line pb-7"><p className="text-xs font-bold uppercase tracking-[0.2em] text-rust">Editor desk</p><h1 className="mt-2 font-display text-5xl font-bold">All posts</h1></div><div className="mb-8 flex flex-wrap gap-3"><div className="flex gap-2">{[['', 'All'], ['DRAFT', 'Draft'], ['PUBLISHED', 'Published']].map(([value, label]) => <button key={value} onClick={() => { setStatus(value); setPage(0); }} className={`rounded-full border px-4 py-2 text-xs font-bold ${status === value ? 'border-ink bg-ink text-paper' : 'border-line'}`}>{label}</button>)}</div><select className="rounded-full border border-line bg-transparent px-4 py-2 text-xs font-bold" value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(0); }}><option value="">All categories</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>{error && <p className="mb-8 border-l-4 border-rust bg-rust/10 px-4 py-3 text-sm">{error}</p>}{loading ? <p className="py-16 text-center text-sm text-ink/60">Loading the desk...</p> : data.content?.length ? <><div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{data.content.map((post) => <PostCard key={post.id} post={post} actions={post.status === 'DRAFT' && <button className="text-xs font-bold text-rust" onClick={() => publish(post.id)}>Publish draft →</button>} />)}</div><Pagination page={data.number ?? page} totalPages={data.totalPages} onChange={setPage} /></> : <p className="border-t border-line py-16 text-center font-display text-2xl">No posts match these filters.</p>}</>;
+}
